@@ -50,6 +50,12 @@ count_difference_agencies <- count_compare_agencies %>%
 
 agencies_transition_team <- current_transition
 
+saveRDS(new_transition_names, "processed_data/new_transition_names.rds")
+
+saveRDS(count_compare_agencies, "processed_data/count_compare_agencies.rds")
+
+saveRDS(agencies_transition_team, "processed_data/agencies_transition_team.rds")
+
 #### AGENCY TEAMS ##### --------------------------------------------------------
 
 
