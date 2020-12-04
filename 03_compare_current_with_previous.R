@@ -32,6 +32,9 @@ previous_transition
 new_transition_names <- anti_join(current_transition, previous_transition, by = "idstring")
 new_transition_names
 
+count_current_agencies <- current_transition %>%
+  count(agency, name = "current_agency_count")
+count_current_agencies
 
 #### AGENCY TEAMS ##### --------------------------------------------------------
 
