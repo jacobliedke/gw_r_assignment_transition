@@ -40,6 +40,10 @@ count_previous_agencies <- previous_transition %>%
   count(agency, name = "previous_agency_count")
 count_previous_agencies
 
+count_compare_agencies <- left_join(count_current_agencies, count_previous_agencies, by = "agency")
+count_compare_agencies
+
+
 
 #### AGENCY TEAMS ##### --------------------------------------------------------
 
