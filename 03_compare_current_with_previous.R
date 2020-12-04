@@ -43,7 +43,12 @@ count_previous_agencies
 count_compare_agencies <- left_join(count_current_agencies, count_previous_agencies, by = "agency")
 count_compare_agencies
 
+count_difference_agencies <- count_compare_agencies %>% 
+  mutate(
+    change = current_agency_count - previous_agency_count
+  )
 
+agencies_transition_team <- current_transition
 
 #### AGENCY TEAMS ##### --------------------------------------------------------
 
