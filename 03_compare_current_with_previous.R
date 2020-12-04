@@ -23,7 +23,8 @@ source("02_scrape_nominees.R")
 
 
 #Your code here#
-
+transition_data_current <- readRDS("processed_data/transition_data_scraped.rds")
+transition_data_current
 
 
 
