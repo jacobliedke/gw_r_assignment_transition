@@ -36,6 +36,11 @@ count_current_agencies <- current_transition %>%
   count(agency, name = "current_agency_count")
 count_current_agencies
 
+count_previous_agencies <- previous_transition %>%
+  count(agency, name = "previous_agency_count")
+count_previous_agencies
+
+
 #### AGENCY TEAMS ##### --------------------------------------------------------
 
 
