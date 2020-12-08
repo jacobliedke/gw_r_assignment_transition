@@ -1,6 +1,6 @@
 ---
 title: "GW Assignment - Biden Transition"
-author: "YOUR NAME HERE"
+author: "Jacob Liedke"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 ---
@@ -15,11 +15,11 @@ library(scales)
 library(gt)
 library(kableExtra)
 options(dplyr.summarise.inform = FALSE)
+library(dplyr)
 
 #run the script for step 03 to update the datasets to capture the current live verions
 #and load all the new dataset objects into the environment (you'll see them populate on the upper right window)
 source("03_compare_current_with_previous.R")
-
 
 ```
 
@@ -35,8 +35,78 @@ Below write code to show the new names added to the agency review team lists sin
   
 
 ```{r, echo=FALSE}
+myurl <- "https://buildbackbetter.gov/the-transition/agency-review-teams/"
+website1 <- GET(myurl) 
+tbls <- html_nodes(content(website1), "table")
+num_tables <- length(tbls)
+num_tables
 
 
+scrape_table <- function(tablenum) {
+
+  url <- "https://buildbackbetter.gov/the-transition/agency-review-teams/"
+  website1 <- GET(url) 
+  titles <- html_nodes(content(website1), "h2")
+  title1 <- print(html_text(titles)[[tablenum]])
+  table1 <- html_table(tbls[[tablenum]], fill=TRUE)
+  table1 <- table1 %>% 
+    as_tibble() %>% 
+    clean_names() %>% 
+    mutate(
+      agency = title1
+    ) %>% 
+    select(agency, everything())
+  
+  return(table1)
+
+}
+
+scrape_table(1)
+
+num_tables
+
+num_sequence <- seq(1, num_tables)
+num_sequence
+
+transition_data_scraped <- map_df(num_sequence, scrape_table)
+
+transition_data_scraped
+
+transition_data_scraped <- transition_data_scraped %>% 
+  mutate(
+    idstring = str_trim(paste0(name, most_recent_employment, agency)),
+    namestring = str_trim(paste0(name, most_recent_employment))
+  )
+
+multiplenames <- transition_data_scraped %>% 
+  count(namestring) %>% 
+  filter(n > 1) %>% 
+  pull(namestring)
+
+transition_data_scraped <- transition_data_scraped %>% 
+  mutate(
+    on_multiple_teams = if_else(namestring %in% multiplenames, "Y", "")
+  )
+
+transition_data_scraped <- transition_data_scraped %>% 
+  mutate(
+    team_lead = if_else(str_detect(name, "Team Lead"), "Y", ""),
+    name = str_remove(name, ", Team Lead")
+  ) %>% 
+  select(agency, name, team_lead, on_multiple_teams, everything())
+
+saveRDS(transition_data_scraped, "processed_data/transition_data_scraped.rds")
+
+current_transition <- readRDS("processed_data/transition_data_scraped.rds")
+current_transition
+
+previous_transition <- readRDS("archived_data/transition_data_archived_2020_11_24t09_52.rds")
+previous_transition
+
+new_transition_names <- anti_join(current_transition, previous_transition, by = "idstring")
+new_transition_names %>%
+   kbl(caption = "New transition names") %>%
+    kable_classic(full_width = F, html_font = "Cambria")
 
  
 
@@ -50,9 +120,31 @@ Add data to show the total number of people appointed to each agency team, along
 
 ```{r, echo=FALSE}
 
+count_current_agencies <- current_transition %>%
+  count(agency, name = "current_agency_count")
+  count_current_agencies %>%
 
+count_previous_agencies <- previous_transition %>%
+  count(agency,name = "previous_agency_count")
+count_previous_agencies
 
+count_compare_agencies <- left_join(count_current_agencies, count_previous_agencies, by = "agency")
+count_compare_agencies
+count_difference_agencies <- count_compare_agencies %>% 
+  mutate(
+    change = current_agency_count - previous_agency_count
+  )
 
+# number of changes by department
+count_difference_agencies[count_difference_agencies$change != 0, ] %>%
+   kbl(caption = "Count of current agencies") %>%
+    kable_classic(full_width = F, html_font = "Cambria")
+
+## number of changes by department in descending order
+count_difference_agencies[count_difference_agencies$change != 0, ] %>%
+  arrange(desc(change)) %>%
+   kbl(caption = "Count of current agencies") %>%
+    kable_classic(full_width = F, html_font = "Cambria")
 
 ```
 
@@ -63,9 +155,12 @@ Show the top 10 **largest** agency review teams as of today:
 
 ```{r, echo=FALSE}
 
-
-
-
+count_current_agencies %>%
+  arrange(desc(current_agency_count
+)) %>%
+  slice(1:10) %>%
+  kbl(caption = "10 largest agency review teams") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
 
 
 ```
@@ -74,9 +169,12 @@ Show the top **smallest** agency review teams as of today - which we'll define h
 
 ```{r, echo=FALSE}
 
-
-
-
+count_current_agencies %>%
+  filter(current_agency_count < 5) %>%
+  arrange(desc(current_agency_count
+)) %>%
+  kbl(caption = "Smallest agency review teams (< 5)") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
  
 
 ```
@@ -93,7 +191,18 @@ Below write code to show the new names added to the senior staff lists since the
   
 
 ```{r, echo=FALSE}
+## Dec 8 vs Nov 24 
+current_senior_staff <- readRDS("processed_data/staff_data_scraped.rds")
+current_senior_staff
+previous_senior_staff <- readRDS("archived_data/staff_data_archived_2020_11_24t14_00.rds")
+previous_senior_staff
 
+new_senior_staff_names <- anti_join(current_senior_staff, previous_senior_staff, by = "idstring")
+new_senior_staff_names
+
+new_senior_staff_names %>%
+  kbl(caption = "New senior staff members") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
 
 
  
@@ -108,8 +217,18 @@ Add code to show the total number of people currently named to the WH senior sta
 
 ```{r, echo=FALSE}
 
+n_previous_staff <- count(previous_senior_staff) %>%
+   kbl(caption = "Number of senior staff members previously") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+n_current_staff <- count(current_senior_staff) %>%
+   kbl(caption = "Number of senior staff members currently") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+n_previous_staff
+n_current_staff
 
+# or
 
-
+nrow(previous_senior_staff)
+nrow(current_senior_staff)
 
 ```
