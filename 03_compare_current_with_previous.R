@@ -23,6 +23,15 @@ source("02_scrape_nominees.R")
 
 
 #Your code here#
+current_senior_staff <- readRDS("processed_data/staff_data_scraped.rds")
+current_senior_staff
+previous_senior_staff <- readRDS("archived_data/staff_data_archived_2020_11_24t14_00.rds")
+previous_senior_staff
+
+new_senior_staff_names <- anti_join(current_senior_staff, previous_senior_staff, by = "idstring")
+new_senior_staff_names
+
+#### AGENCY TEAMS ##### --------------------------------------------------------
 current_transition <- readRDS("processed_data/transition_data_scraped.rds")
 current_transition
 
@@ -55,9 +64,6 @@ saveRDS(new_transition_names, "processed_data/new_transition_names.rds")
 saveRDS(count_compare_agencies, "processed_data/count_compare_agencies.rds")
 
 saveRDS(agencies_transition_team, "processed_data/agencies_transition_team.rds")
-
-#### AGENCY TEAMS ##### --------------------------------------------------------
-
 
 ### COMPARE agency team members with previous archived version ######
 
