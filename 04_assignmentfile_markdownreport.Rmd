@@ -226,9 +226,6 @@ n_current_staff <- count(current_senior_staff) %>%
 n_previous_staff
 n_current_staff
 
-# or
 
-nrow(previous_senior_staff)
-nrow(current_senior_staff)
 
 ```
