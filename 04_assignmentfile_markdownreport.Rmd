@@ -135,16 +135,7 @@ count_difference_agencies <- count_compare_agencies %>%
     change = current_agency_count - previous_agency_count
   )
 
-# number of changes by department
-count_difference_agencies[count_difference_agencies$change != 0, ] %>%
-   kbl(caption = "Count of current agencies") %>%
-    kable_classic(full_width = F, html_font = "Cambria")
 
-## number of changes by department in descending order
-count_difference_agencies[count_difference_agencies$change != 0, ] %>%
-  arrange(desc(change)) %>%
-   kbl(caption = "Count of current agencies") %>%
-    kable_classic(full_width = F, html_font = "Cambria")
 
 ```
 
@@ -226,6 +217,9 @@ n_current_staff <- count(current_senior_staff) %>%
 n_previous_staff
 n_current_staff
 
+# or
 
+nrow(previous_senior_staff)
+nrow(current_senior_staff)
 
 ```
